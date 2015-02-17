@@ -33,7 +33,10 @@
  * 
  */
 
+#include "winsock2.h"
+
 #include "cinder/app/AppBasic.h"
+#include "cinder/app/RendererGl.h"
 #include "cinder/gl/Texture.h"
 #include "cinder/params/Params.h"
 #include "cinder/Text.h"
@@ -68,19 +71,15 @@ private:
 
 	ci::Font					mFont;
 	std::string					mMessage;
-	ci::Vec2f					mSize;
+	ci::vec2					mSize;
 	std::string					mText;
 	std::string					mTextPrev;
-	ci::gl::Texture				mTexture;
+	ci::gl::TextureRef			mTexture;
 
 	float						mFrameRate;
 	bool						mFullScreen;
 	ci::params::InterfaceGlRef	mParams;
 };
-
-#include "boost/algorithm/string.hpp"
-#include "cinder/Json.h"
-#include "cinder/Utilities.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -88,7 +87,7 @@ using namespace std;
 
 void ServerApp::draw()
 {
-	gl::setViewport( getWindowBounds() );
+	gl::viewport( getWindowSize() );
 	gl::clear();
 	gl::setMatricesWindow( getWindowSize() );
 
@@ -161,7 +160,7 @@ void ServerApp::setup()
 	
 	gl::enable( GL_TEXTURE_2D );
 	mFont		= Font( "Georgia", 80 );
-	mSize		= Vec2f( getWindowSize() );
+	mSize		= vec2( getWindowSize() );
 	mText		= "Listening...";
 	mTextPrev	= "";
 
@@ -172,7 +171,7 @@ void ServerApp::setup()
 	mServer.addPingCallback( &ServerApp::onPing, this );
 	mServer.addReadCallback( &ServerApp::onRead, this );
 
-	mParams = params::InterfaceGl::create( "SERVER", Vec2i( 200, 100 ) );
+	mParams = params::InterfaceGl::create( "SERVER", ivec2( 200, 100 ) );
 	mParams->addParam( "Frame rate", &mFrameRate, "", true );
 	mParams->addParam( "Fullscreen", &mFullScreen, "key=f" );
 	mParams->addParam( "Message", &mMessage );
@@ -197,12 +196,12 @@ void ServerApp::update()
 		if ( mText.empty() ) {
 			mTexture.reset();
 		} else {
-			TextBox tbox = TextBox().alignment( TextBox::CENTER ).font( mFont ).size( Vec2i( mSize.x, TextBox::GROW ) ).text( mText );
+			TextBox tbox = TextBox().alignment( TextBox::CENTER ).font( mFont ).size( ivec2( mSize.x, TextBox::GROW ) ).text( mText );
 			tbox.setColor( ColorAf( 1.0f, 0.8f, 0.75f, 1.0f ) );
 			tbox.setBackgroundColor( ColorAf::black() );
 			tbox.setPremultiplied( false );
 			mSize.y		= tbox.measure().y;
-			mTexture	= gl::Texture( tbox.render() );
+			mTexture	= gl::Texture::create( tbox.render() );
 		}
 	}
 }
