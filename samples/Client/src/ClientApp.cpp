@@ -33,7 +33,9 @@
  *
  */
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #include "winsock2.h"
+#endif
 
 #include "cinder/app/AppBasic.h"
 #include "cinder/app/RendererGl.h"
